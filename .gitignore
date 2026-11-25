@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+
+# uv
+uv.lock
+
+# Tooling
+.claude/
+.idea/
+.vs/
+.vscode/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Local runtime / scripts staging (never commit user scripts or bundles)
+py-scripts/
+staged-scripts/
+*.sdn
+*.pub
