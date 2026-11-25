@@ -38,6 +38,8 @@ from .client_reads import (
 from ..core import ctl
 from .components import NO_SUB, ComponentOps, InterfaceComponent
 from .draw import DebugDraw
+from .pacing import INACTIVE as PACING_INACTIVE, METHOD as PACING_METHOD
+from .pacing import SessionPacing, is_method_missing, paced_delay
 from .inventory import (
     InventoryContainer,
     backpack_container,
@@ -250,6 +252,40 @@ class GameApi:
         # The J1-J3 composition facades, made on first use and shared (each keeps its cache
         # reads), as the Java host's GameAPIImpl keeps one of each.
         self._facades: dict[str, Any] = {}
+        # The agent answered get_humanizer_session "method not found": it predates the session
+        # layer, so session_pacing() reads inactive without asking again.
+        self._is_session_method_missing = False
+
+    # --- the agent's session plan (get_humanizer_session; JBotWithUsV2 GameAPI.sessionPacing) --
+
+    def session_pacing(self) -> SessionPacing:
+        """What the agent's session layer has planned for action timing: whether it owns the
+        timing, how long until the held action's press, and the nearest planned break.
+        Read-only. One round trip per call.
+
+        An agent without the layer reads :data:`~botwithus.api.pacing.INACTIVE`; one that
+        predates the method costs one round trip in total. Any other refusal also reads inactive
+        (pacing must never be what fails a script); a dead transport still raises.
+        """
+        if self._is_session_method_missing:
+            return PACING_INACTIVE
+        try:
+            reply = self._rpc.call(PACING_METHOD)
+        except MalformedReply:
+            raise
+        except RpcError as exc:
+            self._is_session_method_missing = is_method_missing(exc.agent_message)
+            return PACING_INACTIVE
+        try:
+            return SessionPacing.from_reply(reply)
+        except (KeyError, TypeError, ValueError) as exc:
+            raise MalformedReply(PACING_METHOD, f"malformed reply: {exc!r}") from exc
+
+    def paced_delay(self, delay_ms: int) -> int:
+        """``delay_ms`` when the agent does not own timing; else the wait until its next planned
+        press (at least :data:`~botwithus.api.pacing.MIN_DEFERRED_DELAY_MS`). Return it from
+        ``on_loop`` so a script's own pacing never stacks on the agent's plan."""
+        return paced_delay(self.session_pacing(), delay_ms)
 
     def _facade(self, name: str, make: Callable[[], Any]) -> Any:
         found = self._facades.get(name)

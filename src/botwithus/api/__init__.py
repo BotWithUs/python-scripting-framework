@@ -130,6 +130,7 @@ if TYPE_CHECKING:
     from .variables import VarbitRead, VarpRead, VarpState
     from .timing import delay_until, delay_while, delay_until_ticks, delay_ticks, Stopwatch, Timer, format_duration, per_hour
     from .xp import XpTable, XpTracker
+    from .pacing import PlannedBreak, SessionPacing, paced_delay
     from .gameval import GamevalIndex, GamevalNotFound, GamevalRef, GamevalType
     from .world import Coordinate, RectangularArea, CircularArea, PolygonalArea
     from .banking import Bank, TransferAmount, WithdrawMode
@@ -249,6 +250,7 @@ _EXPORTS: dict[str, str] = {
     # J1-J3 composition APIs (ported from the Java host)
     **dict.fromkeys(("delay_until", "delay_while", "delay_until_ticks", "delay_ticks", "Stopwatch", "Timer", "format_duration", "per_hour",), ".timing"),
     **dict.fromkeys(("XpTable", "XpTracker",), ".xp"),
+    **dict.fromkeys(("PlannedBreak", "SessionPacing", "paced_delay",), ".pacing"),
     **dict.fromkeys(("GamevalIndex", "GamevalNotFound", "GamevalRef", "GamevalType"), ".gameval"),
     **dict.fromkeys(("Coordinate", "RectangularArea", "CircularArea", "PolygonalArea",), ".world"),
     **dict.fromkeys(("Bank", "TransferAmount", "WithdrawMode",), ".banking"),
@@ -330,6 +332,7 @@ __all__ = [
     # J1-J3 composition APIs
     "delay_until", "delay_while", "delay_until_ticks", "delay_ticks", "Stopwatch", "Timer",
     "format_duration", "per_hour", "XpTable", "XpTracker", "GamevalIndex", "GamevalNotFound",
+    "PlannedBreak", "SessionPacing", "paced_delay",
     "GamevalRef", "GamevalType", "Coordinate", "RectangularArea",
     "CircularArea", "PolygonalArea", "Bank", "TransferAmount", "WithdrawMode", "ActionBar",
     "Ability", "AbilityCatalog", "Cooldown", "EmptySlot", "AbilitySlot", "ItemSlot",
